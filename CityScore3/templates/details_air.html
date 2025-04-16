@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Air Quality Data – {{ city }}</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" />
+  <style>
+    :root {
+      --font-base: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: var(--font-base);
+      background: #eef4f8;
+      overflow-x: hidden;
+    }
+    header, main, footer {
+      padding: 1rem;
+    }
+    .container {
+      margin-top: 50px;
+      max-width: 800px;
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    table {
+      width: 100%;
+    }
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+  </style>
+</head>
+<body>
+  <header class="text-center">
+    <h1>Air Quality Data for {{ city }}, {{ country }}</h1>
+  </header>
+  <main class="container" role="main">
+    {% if data %}
+      <table class="table table-striped" aria-describedby="airDataDesc">
+        <caption id="airDataDesc" class="visually-hidden">Air quality components and their concentrations</caption>
+        <thead>
+          <tr>
+            <th>Component</th>
+            <th>Concentration (µg/m³)</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for comp, value in data.items() %}
+          <tr>
+            <td>{{ comp|upper }}</td>
+            <td>{{ value|round(2) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="text-danger">❌ No air quality data available.</p>
+    {% endif %}
+    <div class="text-center mt-4">
+      <a href="/" class="btn btn-secondary">⬅️ Back to Home</a>
+    </div>
+  </main>
+  <footer class="text-center py-3">
+    <small>© {{ current_year }} City Score. All rights reserved.</small>
+  </footer>
+</body>
+</html>

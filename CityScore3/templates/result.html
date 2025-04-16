@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>City Score Result</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --primary-bg: #007bff;
+      --secondary-bg: #343a40;
+      --info-bg: rgba(255,255,255,0.65);
+      --score-bg: rgba(255,255,255,0.75);
+      --font-family-base: system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      font-family: var(--font-family-base);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+    .background-image {
+      background: url('{{ background_path }}') no-repeat center center fixed;
+      background-size: cover;
+      opacity: 0.5;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    header, main, footer {
+      padding: 1rem;
+    }
+    .main-wrapper {
+      margin-top: 50px;
+      position: relative;
+      z-index: 1;
+    }
+    .info-box {
+      background-color: var(--info-bg);
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .info-box h5 {
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    .score-card {
+      background-color: var(--score-bg);
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 30px;
+    }
+    .progress {
+      height: 25px;
+      background-color: #e9ecef;
+      border-radius: 20px;
+    }
+    .progress-bar {
+      font-weight: bold;
+      line-height: 25px;
+    }
+    #loader {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+    }
+    .spinner {
+      border: 6px solid #f3f3f3;
+      border-top: 6px solid var(--primary-bg);
+      border-radius: 50%;
+      width: 50px;
+      height: 50px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    /* Chart Container for the Doughnut Chart */
+    .chart-container {
+      width: 400px;
+      height: 400px;
+      margin-top: 1rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+  </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function(){
+      document.getElementById('loader').style.display = 'none';
+
+      const ctx = document.getElementById('scoreChart').getContext('2d');
+      const data = {
+        labels: ['Cost of Living', 'Air Quality', 'Education', 'Safety', 'Health'],
+        datasets: [{
+          data: [{{ cost_score }}, {{ air_score }}, {{ education_score }}, {{ safety_score }}, {{ health_score }}],
+          backgroundColor: [
+            'rgba(0, 123, 255, 0.7)',
+            'rgba(23, 162, 184, 0.7)',
+            'rgba(40, 167, 69, 0.7)',
+            'rgba(255, 193, 7, 0.7)',
+            'rgba(220, 53, 69, 0.7)'
+          ],
+          borderColor: [
+            'rgba(0, 123, 255, 1)',
+            'rgba(23, 162, 184, 1)',
+            'rgba(40, 167, 69, 1)',
+            'rgba(255, 193, 7, 1)',
+            'rgba(220, 53, 69, 1)'
+          ],
+          borderWidth: 1
+        }]
+      };
+      const config = {
+        type: 'doughnut',
+        data: data,
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { position: 'bottom' },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  let label = context.label || '';
+                  if (label) { label += ': '; }
+                  label += context.parsed;
+                  return label;
+                }
+              }
+            }
+          }
+        }
+      };
+      new Chart(ctx, config);
+    });
+  </script>
+</head>
+<body>
+  <div id="loader"><div class="spinner"></div></div>
+  <div class="background-image"></div>
+  <header>
+    <h1 class="text-center">City Score Dashboard</h1>
+  </header>
+  <main class="container main-wrapper">
+    <div class="row g-4">
+      <!-- Left Column: Weather and Wikipedia Summary -->
+      <div class="col-md-4">
+        {% if weather_data %}
+        <div class="info-box" role="region" aria-label="Current weather information">
+          <h5>🌤️ Current Weather in {{ city }}</h5>
+          <p>🌡️ Temperature: {{ weather_data.temperature }}°C</p>
+          <p>🌬️ Wind: {{ weather_data.wind_speed }} km/h</p>
+          <p>💧 Humidity: {{ weather_data.humidity }}%</p>
+          <p>☁️ Description: {{ weather_data.description }}</p>
+        </div>
+        {% endif %}
+        {% if wikipedia_summary %}
+        <div class="info-box" role="region" aria-label="City information from Wikipedia">
+          <h5>📘 About {{ city }}</h5>
+          <p>{{ wikipedia_summary }}</p>
+        </div>
+        {% endif %}
+      </div>
+      <!-- Right Column: Score Card -->
+      <div class="col-md-8">
+        <div class="score-card" role="main">
+          {% if error %}
+          <div class="alert alert-danger text-center" role="alert">
+            {{ error }}
+          </div>
+          {% else %}
+          <h2 class="text-center mb-3" style="font-size: 2.5rem;">🌆 Result for {{ city }} ({{ country_code }})</h2>
+          <hr>
+          <h2 class="mb-3" style="font-size: 2.5rem;">🎯 Final City Score:</h2>
+          <div class="progress mb-3" role="progressbar" aria-valuenow="{{ final_score }}" aria-valuemin="0" aria-valuemax="100" style="height: 25px;">
+            <div class="progress-bar bg-dark" style="width: {{ final_score }}%;">
+              {{ final_score }}/100
+            </div>
+          </div>
+          <h5 class="mt-4">⚖️ Your Weights:</h5>
+          <ul>
+            <li>💶 Cost: {{ weights[0] }}</li>
+            <li>🌫️ Air: {{ weights[1] }}</li>
+            <li>📚 Education: {{ weights[2] }}</li>
+            <li>🔐 Safety: {{ weights[3] }}</li>
+            <li>🏥 Health: {{ weights[4] }}</li>
+          </ul>
+          <h5 class="mt-4">Score Breakdown Chart:</h5>
+          <div class="chart-container">
+            <canvas id="scoreChart"></canvas>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </main>
+  <footer class="text-center py-3">
+    <small>© {{ current_year }} City Score. All rights reserved.</small>
+  </footer>
+</body>
+</html>
