@@ -62,7 +62,13 @@ http://127.0.0.1:5000
 
 ## 📖 To view the documentation (MkDocs):
 
-## Start Mkdocs
+### 1. Open Terminal and navigate to your project folder:
+
+```bash
+cd ~/Documents/Web-Programming/CityScore3
+```
+
+### 2. Start Mkdocs
 
 ```bash
 mkdocs serve

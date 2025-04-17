@@ -29,6 +29,7 @@ theme:
 nav:
   - Home: index.md
   - How It Works: how-it-works.md
+  - Frameworks Used: frameworks.md
   - Data Sources: data-sources.md
   - Modules:
       - app.py: modules/app.md
